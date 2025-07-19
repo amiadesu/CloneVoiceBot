@@ -1,0 +1,96 @@
+{
+    "en" : {
+        "registration" : {
+            "not_set" : "Not set",
+            "interaction_expired" : "*This interaction has expired*",
+            "interaction_invalid" : "This interaction has expired or is invalid.",
+            "not_author" : "Only the command author can interact with this message.",
+            "no_voice_channels" : "No voice channels found in this server.",
+            "not_registered" : "Selected voice channel is not registered as a parent voice channel.",
+            "parent_channel_change_success" : "Parent voice channel set to: %{channel_mention}",
+            "name_template_change_success" : "Name template set to: `%{name_template}`",
+            "submit" : {
+                "success" : "New parent voice channel %{channel_mention} added successfully! You may add another parent voice channel using the same interaction message.",
+                "update" : "Parent voice channel %{channel_mention} updated successfully! You may add another parent voice channel using the same interaction message.",
+                "delete" : "Parent voice channel %{channel_mention} deleted from database successfully!",
+                "failure" : "Such parent voice channel already exists. To modify parent voice channel use %{edit_command_mention}."
+            },
+            "embed" : {
+                "title" : "Channel Setup",
+                "description" : "Configure your channel creation settings\n\n*This interaction will expire after %{minutes} minutes of inactivity*"
+            },
+            "fields" : {
+                "parent_channel" : {
+                    "name" : "Current Parent Channel"
+                },
+                "name_template" : {
+                    "name" : "Current Name Template"
+                }
+            },
+            "buttons" : {
+                "parent_channel" : {
+                    "label" : "Set parent voice channel"
+                },
+                "name_template" : {
+                    "label" : "Set name template"
+                },
+                "submit" : {
+                    "label" : "Submit"
+                }
+            },
+            "dropdowns" : {
+                "parent_channel" : {
+                    "channel_option_description" : "ID: %{channel_id}",
+                    "placeholder" : "Select a parent voice channel...",
+                    "message" : "Please select a voice channel from the dropdown (expires in %{minutes} minutes):"
+                }
+            },
+            "modals" : {
+                "name_template" : {
+                    "title" : "Set Name Template",
+                    "label" : "Name Template",
+                    "placeholder" : "e.g., {user}'s channel #{serial}"
+                }
+            }
+        },
+        "voice_updates" : {
+            "voice_is_empty" : "Voice is empty"
+        },
+        "help" : {
+            "title" : "Bot description",
+            "description" : {
+                "bot" : "This is a bot designed for a simple voice dublication system.\n",
+                "parent_channels" : "\nWe will call channels that are going to auto-dublicate **parent channels**.\nWhen user will connect to parent channel this channel will create a new temporary channel with the same configuration as it's parent channel and the name according to the name template you specify.\n",
+                "name_template" : "\nIn the name template you can create a template by which bot will create a new channel's name. This template also takes such parameters:\n> `{user}` - a name of a user that created a temporary channel.\n> `{serial}` - a unique temporary channel's number among all the temporary channels of this parent.\n",
+                "commands" : "\nYou can set up this system using the following commands:"
+            },
+            "fields" : {
+                "help" : {
+                    "name" : "/help",
+                    "value" : "Show this message.\nCommand mention: %{command_mention}"
+                },
+                "create_parent_voice" : {
+                    "name" : "/create_parent_voice",
+                    "value" : "Register a parent channel.\nCommand mention: %{command_mention}"
+                },
+                "edit_parent_voice" : {
+                    "name" : "/edit_parent_voice",
+                    "value" : "Update a parent channel.\nCommand mention: %{command_mention}"
+                },
+                "delete_parent_voice" : {
+                    "name" : "/delete_parent_voice",
+                    "value" : "Delete a parent channel from database.\nCommand mention: %{command_mention}"
+                },
+                "parent_channels_list" : {
+                    "name" : "/parent_channels_list",
+                    "value" : "View the list of all parent channels in current guild.\nCommand mention: %{command_mention}"
+                }
+            }
+        },
+        "parent_channels_list" : {
+            "title" : "List of all parent channels",
+            "row_template" : "\n**Channel**: %{channel_mention}\n**Name template**: `%{name_template}`\n",
+            "no_channels" : "There is no parent channels in this guild!"
+        }
+    }
+}
