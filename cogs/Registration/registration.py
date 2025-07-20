@@ -364,31 +364,7 @@ class Registration(commands.Cog):
             await self.submit_parent_channel(inter)
 
     async def handle_parent_channel_selection(self, inter: disnake.MessageInteraction):
-        """Create a dropdown for voice channel selection"""
-        # Get all voice channels in the guild
-        voice_channels = [
-            channel
-            for channel in inter.guild.voice_channels
-            if isinstance(channel, disnake.VoiceChannel)
-        ]
-
-        if not voice_channels:
-            await inter.response.send_message(
-                i18n.t("registration.no_voice_channels"), 
-                ephemeral=True
-            )
-            return
-
-        # Create dropdown options
-        options = [
-            disnake.SelectOption(
-                label=channel.name,
-                value=str(channel.id),
-                description=i18n.t("registration.dropdowns.parent_channel.channel_option_description", channel_id = channel.id),
-            )
-            for channel in voice_channels
-        ]
-
+        """Show a channel select menu to choose a voice channel."""
         (
             author_id,
             expiry,
@@ -396,25 +372,27 @@ class Registration(commands.Cog):
             name_template,
         ) = self.active_interactions[inter.message.id]
 
+        default_value = None
         if (parent_id):
-            for option in options:
-                if (option.value == str(parent_id)):
-                    option.default = True
+            default_value = [self.bot.get_channel(int(parent_id))]
 
-        # Create dropdown menu with timeout
-        dropdown = disnake.ui.Select(
+        # Create channel select limited to voice channels
+        channel_select = disnake.ui.ChannelSelect(
+            channel_types=[disnake.ChannelType.voice],  # Only voice channels will appear
             placeholder=i18n.t("registration.dropdowns.parent_channel.placeholder"),
-            options=options,
+            min_values=1,
+            max_values=1,
             custom_id=f"parent_channel_select:{inter.message.id}",
+            default_values=default_value
         )
 
         view = disnake.ui.View(timeout=self.timeout)
-        view.add_item(dropdown)
+        view.add_item(channel_select)
 
         await inter.response.send_message(
             i18n.t("registration.dropdowns.parent_channel.message", minutes=float_to_str(self.timeout / 60)),
             view=view,
-            ephemeral=True,
+            ephemeral=True
         )
 
     async def handle_name_template_input(self, inter: disnake.MessageInteraction):
