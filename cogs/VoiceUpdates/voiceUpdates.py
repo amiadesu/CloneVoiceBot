@@ -1,6 +1,7 @@
 import disnake
 from disnake.ext import commands
 
+import disnake.http
 import i18n
 
 from main import CloneVoiceBot
@@ -10,6 +11,37 @@ class VoiceUpdates(commands.Cog):
     def __init__(self, bot: CloneVoiceBot, db: Database):
         self.bot = bot
         self.db = db
+
+    async def copy_channel_permissions(
+        self,
+        source_channel_id: int,
+        target_channel_id: int
+    ):
+        """Copy all permission overwrites from one channel to another"""
+        # 1. Get permissions from source channel
+        get_route = disnake.http.Route(
+            'GET',
+            '/channels/{channel_id}',
+            channel_id=source_channel_id
+        )
+        
+        try:
+            channel_data = await self.bot._connection.http.request(get_route)
+            overwrites = channel_data.get('permission_overwrites', [])
+            
+            # 2. Apply to target channel
+            put_route = disnake.http.Route(
+                'PATCH',
+                '/channels/{channel_id}',
+                channel_id=target_channel_id
+            )
+            
+            payload = {'permission_overwrites': overwrites}
+            await self.bot._connection.http.request(put_route, json=payload)
+            return True
+        except disnake.HTTPException as e:
+            print(f"Error copying channel permissions: {e}")
+            return False
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: disnake.Member, before: disnake.VoiceState, after: disnake.VoiceState):
@@ -32,6 +64,9 @@ class VoiceUpdates(commands.Cog):
                     bitrate=after.channel.bitrate,
                     user_limit=after.channel.user_limit
                 )
+
+                # A workaround to disnake's lacking permissions inside overwrites
+                await self.copy_channel_permissions(after.channel.id, cloned_channel.id)
 
                 self.db.add_temporary_voice(cloned_channel.id, after.channel.id, after.channel.guild.id, serial)
 
