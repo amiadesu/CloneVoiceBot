@@ -6,6 +6,7 @@ import i18n
 
 from main import CloneVoiceBot
 from db.db import Database
+import asyncio
 
 class VoiceUpdates(commands.Cog):
     def __init__(self, bot: CloneVoiceBot, db: Database):
@@ -26,7 +27,7 @@ class VoiceUpdates(commands.Cog):
         )
         
         try:
-            channel_data = await self.bot._connection.http.request(get_route)
+            channel_data = await self.bot.http.request(get_route)
             overwrites = channel_data.get('permission_overwrites', [])
             
             # 2. Apply to target channel
@@ -37,7 +38,7 @@ class VoiceUpdates(commands.Cog):
             )
             
             payload = {'permission_overwrites': overwrites}
-            await self.bot._connection.http.request(put_route, json=payload)
+            await self.bot.http.request(put_route, json=payload)
             return True
         except disnake.HTTPException as e:
             print(f"Error copying channel permissions: {e}")
@@ -60,17 +61,21 @@ class VoiceUpdates(commands.Cog):
                 cloned_channel = await after.channel.guild.create_voice_channel(
                     name=name,
                     category=category,
-                    overwrites=overwrites,
                     bitrate=after.channel.bitrate,
-                    user_limit=after.channel.user_limit
+                    user_limit=after.channel.user_limit,
+                    rtc_region=after.channel.rtc_region,
+                    video_quality_mode=after.channel.video_quality_mode,
+                    nsfw=after.channel.nsfw,
+                    slowmode_delay=after.channel.slowmode_delay,
+                    overwrites=overwrites
                 )
+
+                # A workaround to disnake's lacking permissions inside overwrites
+                await self.copy_channel_permissions(after.channel.id, cloned_channel.id)
 
                 self.db.add_temporary_voice(cloned_channel.id, after.channel.id, after.channel.guild.id, serial)
 
                 await member.move_to(cloned_channel)
-
-                # A workaround to disnake's lacking permissions inside overwrites
-                await self.copy_channel_permissions(after.channel.id, cloned_channel.id)
         if (before.channel):
             temp_voice_result = self.db.get_temporary_voice(before.channel.id)
             if (not temp_voice_result):
