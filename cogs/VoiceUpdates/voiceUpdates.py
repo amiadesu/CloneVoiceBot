@@ -65,12 +65,12 @@ class VoiceUpdates(commands.Cog):
                     user_limit=after.channel.user_limit
                 )
 
-                # A workaround to disnake's lacking permissions inside overwrites
-                await self.copy_channel_permissions(after.channel.id, cloned_channel.id)
-
                 self.db.add_temporary_voice(cloned_channel.id, after.channel.id, after.channel.guild.id, serial)
 
                 await member.move_to(cloned_channel)
+
+                # A workaround to disnake's lacking permissions inside overwrites
+                await self.copy_channel_permissions(after.channel.id, cloned_channel.id)
         if (before.channel):
             temp_voice_result = self.db.get_temporary_voice(before.channel.id)
             if (not temp_voice_result):
