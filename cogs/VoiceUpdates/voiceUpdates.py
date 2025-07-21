@@ -50,7 +50,7 @@ class VoiceUpdates(commands.Cog):
             if (parent_result and before.channel != after.channel):
                 category = after.channel.category
 
-                overwrites = after.channel.overwrites.copy()
+                overwrites = after.channel.overwrites
 
                 template: str = parent_result["name_template"]
                 serial = self.db.get_next_serial_number(after.channel.id)
