@@ -17,12 +17,13 @@ class VoiceUpdates(commands.Cog):
             parent_result = self.db.get_parent_voice(after.channel.id)
             if (parent_result and before.channel != after.channel):
                 category = after.channel.category
-                overwrites = after.channel.overwrites
+
+                overwrites = after.channel.overwrites.copy()
 
                 template: str = parent_result["name_template"]
                 serial = self.db.get_next_serial_number(after.channel.id)
 
-                name = template.replace("{user}", member.nick or member.global_name).replace("{serial}", str(serial))
+                name = template.replace("{user}", member.nick or member.global_name or member.name).replace("{serial}", str(serial))
 
                 cloned_channel = await after.channel.guild.create_voice_channel(
                     name=name,
