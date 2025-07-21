@@ -20,7 +20,7 @@ class Registration(commands.Cog):
         self.active_interactions = {}
         self.cleanup_task = self.cleanup_expired_interactions.start()
 
-        self.timeout = 4  # in seconds
+        self.timeout = 120 # in seconds
 
     def cog_unload(self):
         self.cleanup_task.cancel()
