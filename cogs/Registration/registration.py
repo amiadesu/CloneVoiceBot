@@ -328,6 +328,11 @@ class Registration(commands.Cog):
     @commands.Cog.listener()
     async def on_button_click(self, inter: disnake.MessageInteraction):
         # Check if this is an active interaction
+        if (not (inter.component.custom_id.startswith("set_parent") or
+            inter.component.custom_id.startswith("set_template") or
+            inter.component.custom_id.startswith("submit_parent_channel"))
+        ):
+            return
         if inter.message.id not in self.active_interactions:
             await inter.response.send_message(
                 i18n.t("registration.interaction_invalid"), 
