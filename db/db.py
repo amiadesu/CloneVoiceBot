@@ -1,6 +1,8 @@
 import sqlite3
 from typing import Optional, List, Dict, Any
 
+from datetime import datetime
+
 class Database:
     def __init__(self, db_path: str = 'voice_channels.db'):
         """Initialize the database connection and create tables if they don't exist."""
@@ -27,7 +29,7 @@ class Database:
                     parent_voice_id BIGINT NOT NULL,
                     guild_id BIGINT NOT NULL,
                     serial_number BIGINT NOT NULL CHECK (serial_number > 0),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_at TEXT NOT NULL,
                     FOREIGN KEY (parent_voice_id) REFERENCES parent_voices(channel_id)
                 )
             """)
@@ -40,13 +42,16 @@ class Database:
                 VALUES (?, ?, ?)
             """, (channel_id, guild_id, name_template))
     
-    def add_temporary_voice(self, channel_id: int, parent_voice_id: int, guild_id: int, serial_number: int) -> None:
+    def add_temporary_voice(self, channel_id: int, parent_voice_id: int, guild_id: int, serial_number: int, created_at: Optional[str] = None) -> None:
         """Add a new temporary voice channel to the database."""
+        if created_at is None:
+            created_at = datetime.now().isoformat()
+
         with self.conn:
             self.conn.execute("""
                 INSERT INTO temporary_voices (channel_id, parent_voice_id, guild_id, serial_number, created_at)
-                VALUES (?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))
-            """, (channel_id, parent_voice_id, guild_id, serial_number))
+                VALUES (?, ?, ?, ?, ?)
+            """, (channel_id, parent_voice_id, guild_id, serial_number, created_at))
 
     def update_parent_voice(self, channel_id: int, guild_id: int, name_template: str) -> None:
         """Update the name template of an existing parent voice channel."""
