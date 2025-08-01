@@ -1,5 +1,5 @@
 import disnake
-from disnake.ext import commands
+from disnake.ext import commands, tasks
 
 import disnake.http
 import i18n
@@ -7,11 +7,36 @@ import i18n
 from main import CloneVoiceBot
 from db.db import Database
 import asyncio
+from datetime import datetime, timedelta
 
 class VoiceUpdates(commands.Cog):
     def __init__(self, bot: CloneVoiceBot, db: Database):
         self.bot = bot
         self.db = db
+        self.cleanup_empty_channels.start()
+
+    def cog_unload(self):
+        self.cleanup_empty_channels.cancel()
+
+    @tasks.loop(minutes=5)
+    async def cleanup_empty_channels(self):
+        now = datetime.now()
+        for entry in self.db.get_all_temporary_voices():
+            channel = self.bot.get_channel(entry['channel_id'])
+            if (not channel):
+                continue
+            
+            if (not isinstance(channel, disnake.VoiceChannel)):
+                continue
+
+            if (len(channel.members) == 0):
+                try:
+                    created_at = datetime.fromisoformat(entry['created_at'])
+                    if ((now - created_at) > timedelta(minutes=5)):
+                        await channel.delete(reason=i18n.t("voice_updates.voice_is_empty"))
+                        self.db.delete_temporary_voice(entry['channel_id'])
+                except Exception as e:
+                    print(f"Error deleting channel {entry['channel_id']}: {e}")
 
     async def copy_channel_permissions(
         self,

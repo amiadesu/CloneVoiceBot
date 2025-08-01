@@ -27,6 +27,7 @@ class Database:
                     parent_voice_id BIGINT NOT NULL,
                     guild_id BIGINT NOT NULL,
                     serial_number BIGINT NOT NULL CHECK (serial_number > 0),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (parent_voice_id) REFERENCES parent_voices(channel_id)
                 )
             """)
@@ -43,8 +44,8 @@ class Database:
         """Add a new temporary voice channel to the database."""
         with self.conn:
             self.conn.execute("""
-                INSERT INTO temporary_voices (channel_id, parent_voice_id, guild_id, serial_number)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO temporary_voices (channel_id, parent_voice_id, guild_id, serial_number, created_at)
+                VALUES (?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))
             """, (channel_id, parent_voice_id, guild_id, serial_number))
 
     def update_parent_voice(self, channel_id: int, guild_id: int, name_template: str) -> None:
@@ -121,7 +122,7 @@ class Database:
         """Get a temporary voice channel by its ID."""
         cursor = self.conn.cursor()
         cursor.execute("""
-            SELECT channel_id, parent_voice_id, guild_id, serial_number
+            SELECT channel_id, parent_voice_id, guild_id, serial_number, created_at
             FROM temporary_voices
             WHERE channel_id = ?
         """, (channel_id,))
@@ -131,9 +132,24 @@ class Database:
                 'channel_id': row[0],
                 'parent_voice_id': row[1],
                 'guild_id': row[2],
-                'serial_number': row[3]
+                'serial_number': row[3],
+                'created_at' : row[4]
             }
         return None
+    
+    def get_all_temporary_voices(self) -> List[Dict[str, Any]]:
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT channel_id, guild_id, created_at
+            FROM temporary_voices
+        """)
+        return [
+            {
+                'channel_id': row[0],
+                'guild_id': row[1],
+                'created_at': row[2]
+            } for row in cursor.fetchall()
+        ]
     
     def get_next_serial_number(self, parent_voice_id: int) -> int:
         """

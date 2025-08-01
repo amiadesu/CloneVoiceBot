@@ -21,7 +21,7 @@ db = Database(DB_URL)
 
 class CloneVoiceBot(commands.InteractionBot):
     def __init__(self):
-        intents = disnake.Intents.default()
+        intents = disnake.Intents.all()
         super().__init__(intents=intents)
 
         self.help_command_color = disnake.Color.blurple()
